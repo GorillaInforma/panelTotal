@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gorilla Informa — Panel de producción</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Playfair+Display:wght@700;800;900&family=Inter:wght@500;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+  html,body{background:#f3f2ee;}
+  body{padding:40px 24px 100px;}
+
+  .wrap{max-width:1180px;margin:0 auto;}
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+  header.top h1{font-family:'Playfair Display',serif;font-weight:900;font-size:30px;color:#111;}
+  header.top .brand{font-family:'Anton',sans-serif;font-size:15px;color:#a8402f;letter-spacing:.08em;}
+
+  .panel{background:#fff;border-radius:10px;box-shadow:0 2px 18px rgba(0,0,0,.08);padding:28px 32px;margin-bottom:22px;}
+  .panel h2{font-family:'Playfair Display',serif;font-weight:800;font-size:20px;color:#111;margin-bottom:6px;}
+  .panel .desc{font-size:14px;color:#666;line-height:1.5;margin-bottom:18px;}
+  .panel .desc b{color:#333;}
+
+  /* stage */
+  .stage-row{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;}
+  .stage{width:560px;max-width:100%;height:315px;background:#000;position:relative;overflow:hidden;border-radius:8px;flex:0 0 auto;}
+  #player{width:100%;height:100%;}
+  .caption{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.9));padding:16px 20px 14px;font-size:15px;line-height:1.35;color:#fff;font-weight:700;}
+
+  .side-col{flex:1;min-width:280px;}
+  .upload-box{border:2px dashed #ccc;border-radius:8px;padding:20px;text-align:center;margin-bottom:14px;}
+  .upload-box.loaded{border-color:#3fa85a;background:#f3fbf5;}
+  .upload-box input{margin-top:10px;}
+  .upload-box .lbl{font-weight:700;font-size:14px;color:#333;margin-bottom:4px;}
+
+  .btn{font-family:'Inter',sans-serif;font-weight:800;font-size:14.5px;border:none;border-radius:7px;padding:14px 22px;cursor:pointer;color:#fff;display:inline-flex;align-items:center;gap:8px;}
+  .btn-primary{background:#a8402f;}
+  .btn-primary:hover{background:#8f2f22;}
+  .btn-record{background:#111;}
+  .btn-record:hover{background:#c21f2b;}
+  .btn-stop{background:#666;}
+  .btn:disabled{background:#ccc;cursor:not-allowed;}
+  .btn-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;}
+
+  .status{margin-top:12px;font-size:13.5px;font-weight:700;color:#a8402f;min-height:18px;}
+  .status.rec{color:#c21f2b;}
+  .status.ok{color:#3fa85a;}
+
+  .timeline{margin-top:16px;border-top:1px solid #eee;padding-top:12px;font-size:12.5px;color:#888;max-height:150px;overflow-y:auto;}
+  .timeline div{padding:3px 0;}
+  .timeline .active{color:#a8402f;font-weight:800;}
+
+  /* segment cards */
+  .seg-grid{display:flex;flex-direction:column;gap:14px;}
+  .seg-card{border:1px solid #e6e6e6;border-left:6px solid #a8402f;border-radius:8px;padding:18px 22px;background:#fafafa;}
+  .seg-card .top-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+  .seg-card .num{font-family:'Anton',sans-serif;font-size:15px;color:#a8402f;letter-spacing:.03em;}
+  .seg-card .title{font-family:'Playfair Display',serif;font-weight:700;font-size:17px;color:#111;flex:1;margin-left:12px;}
+  .seg-card .dur{font-family:'Inter',sans-serif;font-weight:800;font-size:13px;color:#333;background:#eee;padding:3px 10px;border-radius:20px;}
+  .seg-card .sug{font-size:12.5px;color:#888;font-style:italic;margin-bottom:12px;}
+  .seg-card .field-row{display:flex;gap:12px;align-items:center;}
+  .seg-card input.linkbox{
+    flex:1;font-size:15px;padding:14px 16px;border:2px solid #ddd;border-radius:7px;
+  }
+  .seg-card input.linkbox.ok{border-color:#3fa85a;background:#f3fbf5;}
+  .seg-card input.linkbox.bad{border-color:#c21f2b;background:#fdf3f2;}
+  .seg-card .start-wrap{flex:0 0 130px;}
+  .seg-card .start-wrap label{display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700;}
+  .seg-card input.startbox{width:100%;font-size:15px;padding:14px 12px;border:2px solid #ddd;border-radius:7px;}
+
+  .note{background:#fff8e8;border:1px solid #f0dfa8;border-radius:7px;padding:14px 18px;font-size:13px;color:#7a5f10;line-height:1.5;margin-top:16px;}
+  .note b{color:#5c4700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Panel de producción del video</h1>
+  <div class="brand">GORILLA INFORMA</div>
+</header>
+
+<div class="panel">
+  <h2>1 · Vista previa y grabación</h2>
+  <p class="desc">Aquí se reproduce la secuencia completa. Cuando esté lista, usa <b>"Grabar y descargar video"</b>: Chrome te pedirá elegir qué compartir — selecciona <b>"Esta pestaña"</b> y activa la casilla <b>"Compartir audio de la pestaña"</b>. Eso graba exactamente lo que ves y escuchas, y al terminar se descarga solo.</p>
+
+  <div class="stage-row">
+    <div class="stage">
+      <div id="player"></div>
+      <div class="caption" id="caption">Presiona "Reproducir vista previa" para probar antes de grabar.</div>
+    </div>
+    <div class="side-col">
+      <div class="upload-box" id="uploadBox">
+        <div class="lbl">Audio de narración</div>
+        <input type="file" id="audioFile" accept="audio/*">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="playBtn" disabled>▶ Reproducir vista previa</button>
+        <button class="btn btn-stop" id="stopBtn" disabled>■ Detener</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-record" id="recordBtn" disabled>⏺ Grabar y descargar video</button>
+      </div>
+      <div class="status" id="status">Sube tu audio y llena al menos un link para empezar.</div>
+      <div class="timeline" id="timeline"></div>
+      <div class="note"><b>Nota:</b> si el mp4 no es compatible con tu navegador, el archivo se descarga en formato .webm — se abre y edita igual en CapCut, DaVinci o VLC.</div>
+    </div>
+  </div>
+  <audio id="narration" style="display:none;"></audio>
+</div>
+
+<div class="panel">
+  <h2>2 · Clips por bloque</h2>
+  <p class="desc">Pega el link completo de YouTube de cada escena. El campo se pone <b>verde</b> cuando el link es válido, y si el link ya trae el segundo de inicio, se detecta solo.</p>
+  <div class="seg-grid" id="segGrid"></div>
+</div>
+
+</div>
+
+<script>
+const segments = [
+  {label:"Portada / gancho: EE.UU. y el mito de la democracia", dur:13.5, sug:"Bandera de EE.UU. ondeando / Capitolio"},
+  {label:"Punto de partida: ciudadano promedio sin influencia", dur:17.6, sug:"Gente votando en fila, casilla electoral"},
+  {label:"Definición D de democracia (Aristóteles / Dahl)", dur:20, sug:"Congreso de EE.UU., sesión plenaria"},
+  {label:"Prueba 1: Gilens & Page, influencia ciudadana", dur:21, sug:"Manifestación ciudadana / lobby en Washington"},
+  {label:"Prueba 2: Colegio Electoral", dur:16, sug:"Mapa electoral EE.UU. / conteo de votos"},
+  {label:"Prueba 3: Gerrymandering en Texas 2025", dur:17, sug:"Trump firmando documento / legislatura de Texas"},
+  {label:"Prueba 4: Citizens United, dinero en campañas", dur:21.5, sug:"Corte Suprema de EE.UU. exterior"},
+  {label:"Prueba 5: índices internacionales (V-Dem, EIU)", dur:17.7, sug:"Rueda de prensa / gráfica de reporte en pantalla"},
+  {label:"Prueba 6: bipartidismo, Ley de Duverger", dur:18.7, sug:"Debate presidencial Bush vs Gore 2000"},
+  {label:"Prueba 7: FEC sin quórum", dur:12.6, sug:"Edificio FEC / oficina federal Washington"},
+  {label:"Tabla resumen de las 7 pruebas", dur:14.7, sug:"Montaje de urnas y boletas electorales"},
+  {label:"Conclusión: forma vs. sustancia", dur:14.4, sug:"Bandera de EE.UU. en cámara lenta"},
+  {label:"Precisión: lo que no dice el hallazgo", dur:17.3, sug:"Periodistas trabajando en redacción"},
+  {label:"Vías de refutación académica", dur:21.2, sug:"Biblioteca universitaria / archivo académico"},
+  {label:"Fuentes citadas", dur:15.5, sug:"Papeles y documentos en escritorio"},
+  {label:"Cierre: Gorilla Informa", dur:3.2, sug:"Logo / fade a negro"}
+];
+
+const grid = document.getElementById('segGrid');
+segments.forEach((s,i)=>{
+  const card = document.createElement('div');
+  card.className = 'seg-card';
+  card.innerHTML = `
+    <div class="top-row">
+      <span class="num">${String(i+1).padStart(2,'0')}</span>
+      <span class="title">${s.label}</span>
+      <span class="dur">${s.dur}s</span>
+    </div>
+    <div class="sug">Sugerencia: ${s.sug}</div>
+    <div class="field-row">
+      <input class="linkbox" id="id-${i}" placeholder="Pega aquí el link completo de YouTube" oninput="onLinkInput(${i})">
+      <div class="start-wrap">
+        <label>Inicio (s)</label>
+        <input class="startbox" id="start-${i}" type="number" value="0" min="0">
+      </div>
+    </div>`;
+  grid.appendChild(card);
+});
+
+let cum = [0];
+for(let i=0;i<segments.length;i++) cum.push(cum[i]+segments[i].dur);
+
+const timelineEl = document.getElementById('timeline');
+segments.forEach((s,i)=>{
+  const d = document.createElement('div');
+  d.id = 'tl-'+i;
+  d.textContent = `${cum[i].toFixed(1)}s – ${cum[i+1].toFixed(1)}s · ${s.label}`;
+  timelineEl.appendChild(d);
+});
+
+function extractYouTubeId(input){
+  input = input.trim();
+  if(/^[a-zA-Z0-9_-]{11}$/.test(input)) return {id:input, start:null};
+  try{
+    const url = new URL(input);
+    let id = null;
+    if(url.hostname.includes('youtu.be')){ id = url.pathname.slice(1); }
+    else if(url.hostname.includes('youtube.com')){
+      id = url.searchParams.get('v');
+      if(!id && url.pathname.startsWith('/shorts/')) id = url.pathname.split('/')[2];
+      if(!id && url.pathname.startsWith('/embed/')) id = url.pathname.split('/')[2];
+    }
+    let start = null;
+    const t = url.searchParams.get('t') || url.searchParams.get('start');
+    if(t){
+      const m = String(t).match(/(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+      if(m && (m[1]||m[2]||m[3])) start = (parseInt(m[1]||0)*3600)+(parseInt(m[2]||0)*60)+parseInt(m[3]||0);
+      else if(/^\d+$/.test(t)) start = parseInt(t);
+    }
+    return {id, start};
+  } catch(e){ return {id:null, start:null}; }
+}
+
+function onLinkInput(i){
+  const box = document.getElementById('id-'+i);
+  const result = extractYouTubeId(box.value);
+  box.classList.remove('ok','bad');
+  if(box.value.trim().length===0){ box.dataset.videoId=''; checkEnable(); return; }
+  if(result.id && result.id.length===11){
+    box.classList.add('ok');
+    box.dataset.videoId = result.id;
+    if(result.start !== null) document.getElementById('start-'+i).value = result.start;
+  } else {
+    box.classList.add('bad');
+    box.dataset.videoId = '';
+  }
+  checkEnable();
+}
+
+let ytPlayer=null, ytReady=false, playing=false, currentSeg=-1, recorder=null, mediaStream=null;
+
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+document.body.appendChild(tag);
+window.onYouTubeIframeAPIReady = ()=>{
+  ytPlayer = new YT.Player('player', {
+    height:'315', width:'560',
+    playerVars:{controls:0, disablekb:1, modestbranding:1, rel:0},
+    events:{ 'onReady': ()=>{ ytReady=true; checkEnable(); } }
+  });
+};
+
+const audioEl = document.getElementById('narration');
+const audioInput = document.getElementById('audioFile');
+const uploadBox = document.getElementById('uploadBox');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const recordBtn = document.getElementById('recordBtn');
+const statusEl = document.getElementById('status');
+const captionEl = document.getElementById('caption');
+
+let audioLoaded=false;
+audioInput.addEventListener('change',(e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  audioEl.src = URL.createObjectURL(file);
+  audioLoaded = true;
+  uploadBox.classList.add('loaded');
+  statusEl.textContent = "Audio cargado. Completa los links y prueba la vista previa.";
+  checkEnable();
+});
+
+function checkEnable(){
+  const anyId = segments.some((_,i)=>{
+    const box = document.getElementById('id-'+i);
+    return box.dataset.videoId && box.dataset.videoId.length===11;
+  });
+  const enabled = ytReady && audioLoaded && anyId;
+  playBtn.disabled = !enabled;
+  recordBtn.disabled = !enabled;
+}
+
+function loadSegment(i){
+  currentSeg = i;
+  segments.forEach((_,idx)=>{
+    document.getElementById('tl-'+idx).className = idx===i ? 'active' : '';
+  });
+  captionEl.textContent = `Bloque ${i+1}/${segments.length}: ${segments[i].label}`;
+  const id = document.getElementById('id-'+i).dataset.videoId || '';
+  const start = parseFloat(document.getElementById('start-'+i).value) || 0;
+  if(id){
+    ytPlayer.loadVideoById({videoId:id, startSeconds:start});
+    ytPlayer.mute();
+  } else {
+    captionEl.textContent += ' (sin link — pantalla en negro)';
+    ytPlayer.stopVideo();
+  }
+}
+
+audioEl.addEventListener('timeupdate', ()=>{
+  if(!playing) return;
+  const t = audioEl.currentTime;
+  for(let i=0;i<segments.length;i++){
+    if(t>=cum[i] && t<cum[i+1] && currentSeg!==i){ loadSegment(i); break; }
+  }
+});
+
+audioEl.addEventListener('ended', ()=>{
+  stopSequence();
+  if(recorder && recorder.state==='recording'){
+    recorder.stop();
+  }
+  statusEl.textContent = "Secuencia terminada.";
+  statusEl.className = "status ok";
+});
+
+function startSequence(){
+  playing = true;
+  currentSeg = -1;
+  audioEl.currentTime = 0;
+  audioEl.play();
+  loadSegment(0);
+}
+
+playBtn.addEventListener('click', ()=>{
+  startSequence();
+  playBtn.disabled = true;
+  stopBtn.disabled = false;
+  statusEl.textContent = "Reproduciendo vista previa...";
+  statusEl.className = "status";
+});
+
+stopBtn.addEventListener('click', stopSequence);
+function stopSequence(){
+  playing = false;
+  audioEl.pause();
+  if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+  playBtn.disabled = false;
+  stopBtn.disabled = true;
+}
+
+recordBtn.addEventListener('click', async ()=>{
+  try{
+    mediaStream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
+  } catch(err){
+    statusEl.textContent = "No se pudo iniciar la grabación (permiso cancelado).";
+    statusEl.className = "status";
+    return;
+  }
+  let mimeType = 'video/mp4';
+  if(!window.MediaRecorder || !MediaRecorder.isTypeSupported(mimeType)){
+    mimeType = 'video/webm;codecs=vp9,opus';
+    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+  }
+  const chunks = [];
+  recorder = new MediaRecorder(mediaStream, {mimeType});
+  recorder.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data); };
+  recorder.onstop = ()=>{
+    const blob = new Blob(chunks, {type: mimeType});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    a.href = url;
+    a.download = `gorilla-informa-video.${ext}`;
+    a.click();
+    mediaStream.getTracks().forEach(t=>t.stop());
+    statusEl.textContent = `Video descargado (.${ext}).`;
+    statusEl.className = "status ok";
+  };
+  mediaStream.getVideoTracks()[0].addEventListener('ended', ()=>{
+    if(recorder.state==='recording') recorder.stop();
+  });
+  recorder.start();
+  statusEl.textContent = "🔴 Grabando... no cambies de pestaña.";
+  statusEl.className = "status rec";
+  startSequence();
+  playBtn.disabled = true;
+  stopBtn.disabled = false;
+  recordBtn.disabled = true;
+});
+</script>
+</body>
+</html>
