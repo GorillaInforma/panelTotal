@@ -26,10 +26,17 @@
   .caption{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.9));padding:16px 20px 14px;font-size:15px;line-height:1.35;color:#fff;font-weight:700;}
 
   .side-col{flex:1;min-width:280px;}
-  .upload-box{border:2px dashed #ccc;border-radius:8px;padding:20px;text-align:center;margin-bottom:14px;}
+  .upload-box{border:2px dashed #ccc;border-radius:8px;padding:16px 20px;text-align:left;margin-bottom:14px;}
   .upload-box.loaded{border-color:#3fa85a;background:#f3fbf5;}
   .upload-box input{margin-top:10px;}
   .upload-box .lbl{font-weight:700;font-size:14px;color:#333;margin-bottom:4px;}
+  .upload-box.disabled{opacity:.45;pointer-events:none;}
+
+  .mode-toggle{display:flex;gap:18px;margin-bottom:14px;font-size:13.5px;font-weight:700;color:#333;}
+  .mode-toggle label{display:flex;align-items:center;gap:6px;cursor:pointer;}
+
+  select#voiceSelect{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:13.5px;}
+  input#speedSlider{width:100%;}
 
   .btn{font-family:'Inter',sans-serif;font-weight:800;font-size:14.5px;border:none;border-radius:7px;padding:14px 22px;cursor:pointer;color:#fff;display:inline-flex;align-items:center;gap:8px;}
   .btn-primary{background:#a8402f;}
@@ -40,7 +47,7 @@
   .btn:disabled{background:#ccc;cursor:not-allowed;}
   .btn-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;}
 
-  .status{margin-top:12px;font-size:13.5px;font-weight:700;color:#a8402f;min-height:18px;}
+  .status{margin-top:12px;font-size:13.5px;font-weight:700;color:#a8402f;min-height:18px;line-height:1.4;}
   .status.rec{color:#c21f2b;}
   .status.ok{color:#3fa85a;}
 
@@ -54,7 +61,9 @@
   .seg-card .top-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
   .seg-card .num{font-family:'Anton',sans-serif;font-size:15px;color:#a8402f;letter-spacing:.03em;}
   .seg-card .title{font-family:'Playfair Display',serif;font-weight:700;font-size:17px;color:#111;flex:1;margin-left:12px;}
-  .seg-card .dur{font-family:'Inter',sans-serif;font-weight:800;font-size:13px;color:#333;background:#eee;padding:3px 10px;border-radius:20px;}
+  .seg-card .dur-wrap{font-family:'Inter',sans-serif;font-weight:800;font-size:13px;color:#333;background:#eee;padding:3px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;}
+  .seg-card .dur-wrap input.durbox{width:52px;border:1px solid #ccc;border-radius:12px;padding:2px 6px;font-weight:800;font-size:13px;text-align:center;background:#fff;}
+  .seg-card .end-hint{font-size:11px;color:#aaa;margin-left:8px;}
   .seg-card .sug{font-size:12.5px;color:#888;font-style:italic;margin-bottom:12px;}
   .seg-card .field-row{display:flex;gap:12px;align-items:center;}
   .seg-card input.linkbox{
@@ -65,6 +74,9 @@
   .seg-card .start-wrap{flex:0 0 130px;}
   .seg-card .start-wrap label{display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700;}
   .seg-card input.startbox{width:100%;font-size:15px;padding:14px 12px;border:2px solid #ddd;border-radius:7px;}
+  .seg-card .script-row{margin-top:10px;}
+  .seg-card .script-row label{display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700;}
+  .seg-card textarea.scriptbox{width:100%;font-size:13.5px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;resize:vertical;}
 
   .note{background:#fff8e8;border:1px solid #f0dfa8;border-radius:7px;padding:14px 18px;font-size:13px;color:#7a5f10;line-height:1.5;margin-top:16px;}
   .note b{color:#5c4700;}
@@ -80,7 +92,7 @@
 
 <div class="panel">
   <h2>1 · Vista previa y grabación</h2>
-  <p class="desc">Aquí se reproduce la secuencia completa. Cuando esté lista, usa <b>"Grabar y descargar video"</b>: Chrome te pedirá elegir qué compartir — selecciona <b>"Esta pestaña"</b> y activa la casilla <b>"Compartir audio de la pestaña"</b>. Eso graba exactamente lo que ves y escuchas, y al terminar se descarga solo.</p>
+  <p class="desc">Aquí se reproduce la secuencia completa. Cuando esté lista, usa <b>"Grabar y descargar video"</b>: Chrome te pedirá elegir qué compartir — selecciona <b>"Esta pestaña"</b> y activa la casilla <b>"Compartir audio de la pestaña"</b>, y luego dale <b>Compartir/Permitir</b> (no Cancelar). Eso graba exactamente lo que ves y escuchas.</p>
 
   <div class="stage-row">
     <div class="stage">
@@ -88,10 +100,25 @@
       <div class="caption" id="caption">Presiona "Reproducir vista previa" para probar antes de grabar.</div>
     </div>
     <div class="side-col">
+      <div class="mode-toggle">
+        <label><input type="radio" name="narrMode" value="audio" checked> Audio subido</label>
+        <label><input type="radio" name="narrMode" value="tts"> Voz sintetizada</label>
+      </div>
+
       <div class="upload-box" id="uploadBox">
         <div class="lbl">Audio de narración</div>
         <input type="file" id="audioFile" accept="audio/*">
       </div>
+
+      <div class="upload-box" id="ttsBox">
+        <div class="lbl">Voz sintetizada (usa el guion de cada bloque, abajo en "2 · Clips por bloque")</div>
+        <select id="voiceSelect"></select>
+        <div style="margin-top:10px;">
+          <label style="font-size:12px;color:#888;">Velocidad: <span id="speedLabel">1.0x</span></label>
+          <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+        </div>
+      </div>
+
       <div class="btn-row">
         <button class="btn btn-primary" id="playBtn" disabled>▶ Reproducir vista previa</button>
         <button class="btn btn-stop" id="stopBtn" disabled>■ Detener</button>
@@ -99,17 +126,29 @@
       <div class="btn-row">
         <button class="btn btn-record" id="recordBtn" disabled>⏺ Grabar y descargar video</button>
       </div>
-      <div class="status" id="status">Sube tu audio y llena al menos un link para empezar.</div>
+      <div class="status" id="status">Sube tu audio (o escribe el guion) y llena al menos un link para empezar.</div>
       <div class="timeline" id="timeline"></div>
       <div class="note"><b>Nota:</b> si el mp4 no es compatible con tu navegador, el archivo se descarga en formato .webm — se abre y edita igual en CapCut, DaVinci o VLC.</div>
+      <div class="note"><b>Nota:</b> la grabación de pantalla desde el navegador no siempre funciona igual en celular. Si el botón de grabar falla o el permiso se cancela, puedes reproducir la secuencia con "Reproducir vista previa" y grabar la pantalla con el grabador nativo de tu Android mientras se reproduce.</div>
     </div>
   </div>
   <audio id="narration" style="display:none;"></audio>
 </div>
 
 <div class="panel">
-  <h2>2 · Clips por bloque</h2>
-  <p class="desc">Pega el link completo de YouTube de cada escena. El campo se pone <b>verde</b> cuando el link es válido, y si el link ya trae el segundo de inicio, se detecta solo.</p>
+  <h2>2 · Análisis del audio (opcional)</h2>
+  <p class="desc">Si subiste un audio, esto analiza los silencios reales entre frases para calcular <b>cuánto dura de verdad cada bloque</b>, y llena la duración de cada clip automáticamente. Es una estimación — revisa y ajusta si hace falta.</p>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="analyzeBtn" disabled>Analizar audio y sugerir duraciones</button>
+    <button class="btn btn-record" id="applyDurationsBtn" style="display:none;">Aplicar estas duraciones a los bloques</button>
+  </div>
+  <div class="status" id="analyzeStatus"></div>
+  <div class="timeline" id="analyzeResult" style="display:none;"></div>
+</div>
+
+<div class="panel">
+  <h2>3 · Clips por bloque</h2>
+  <p class="desc">Pega el link completo de YouTube de cada escena. El campo se pone <b>verde</b> cuando el link es válido, y si el link ya trae el segundo de inicio, se detecta solo. La <b>duración</b> de cada bloque es editable — ahí defines en qué segundo termina cada clip dentro de la secuencia.</p>
   <div class="seg-grid" id="segGrid"></div>
 </div>
 
@@ -143,7 +182,7 @@ segments.forEach((s,i)=>{
     <div class="top-row">
       <span class="num">${String(i+1).padStart(2,'0')}</span>
       <span class="title">${s.label}</span>
-      <span class="dur">${s.dur}s</span>
+      <span class="dur-wrap"><input class="durbox" id="dur-${i}" type="number" step="0.1" min="0.1" value="${s.dur}" oninput="recalcCum()">s</span>
     </div>
     <div class="sug">Sugerencia: ${s.sug}</div>
     <div class="field-row">
@@ -152,20 +191,33 @@ segments.forEach((s,i)=>{
         <label>Inicio (s)</label>
         <input class="startbox" id="start-${i}" type="number" value="0" min="0">
       </div>
+    </div>
+    <div class="script-row">
+      <label>Guion (opcional, para voz sintetizada)</label>
+      <textarea class="scriptbox" id="script-${i}" rows="2" placeholder="Escribe aquí el texto que se narrará en este bloque..." oninput="checkEnable()"></textarea>
     </div>`;
   grid.appendChild(card);
 });
 
 let cum = [0];
-for(let i=0;i<segments.length;i++) cum.push(cum[i]+segments[i].dur);
+function recalcCum(){
+  const durs = segments.map((_,i)=> parseFloat(document.getElementById('dur-'+i).value) || 0.1);
+  let c=[0];
+  for(let i=0;i<durs.length;i++) c.push(c[i]+durs[i]);
+  cum = c;
+  segments.forEach((s,i)=>{
+    const el = document.getElementById('tl-'+i);
+    if(el) el.textContent = `${cum[i].toFixed(1)}s – ${cum[i+1].toFixed(1)}s · ${s.label}`;
+  });
+}
 
 const timelineEl = document.getElementById('timeline');
 segments.forEach((s,i)=>{
   const d = document.createElement('div');
   d.id = 'tl-'+i;
-  d.textContent = `${cum[i].toFixed(1)}s – ${cum[i+1].toFixed(1)}s · ${s.label}`;
   timelineEl.appendChild(d);
 });
+recalcCum();
 
 function extractYouTubeId(input){
   input = input.trim();
@@ -222,29 +274,78 @@ window.onYouTubeIframeAPIReady = ()=>{
 const audioEl = document.getElementById('narration');
 const audioInput = document.getElementById('audioFile');
 const uploadBox = document.getElementById('uploadBox');
+const ttsBox = document.getElementById('ttsBox');
+const voiceSelect = document.getElementById('voiceSelect');
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel = document.getElementById('speedLabel');
 const playBtn = document.getElementById('playBtn');
 const stopBtn = document.getElementById('stopBtn');
 const recordBtn = document.getElementById('recordBtn');
 const statusEl = document.getElementById('status');
 const captionEl = document.getElementById('caption');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const analyzeStatus = document.getElementById('analyzeStatus');
+const analyzeResult = document.getElementById('analyzeResult');
+const applyDurationsBtn = document.getElementById('applyDurationsBtn');
 
 let audioLoaded=false;
+let currentAudioFile=null;
+let detectedDurations=null;
+
+function getMode(){
+  return document.querySelector('input[name="narrMode"]:checked').value;
+}
+function refreshModeUI(){
+  const mode = getMode();
+  uploadBox.classList.toggle('disabled', mode!=='audio');
+  ttsBox.classList.toggle('disabled', mode!=='tts');
+  checkEnable();
+}
+document.querySelectorAll('input[name="narrMode"]').forEach(r=> r.addEventListener('change', refreshModeUI));
+refreshModeUI();
+
 audioInput.addEventListener('change',(e)=>{
   const file = e.target.files[0];
   if(!file) return;
+  currentAudioFile = file;
   audioEl.src = URL.createObjectURL(file);
   audioLoaded = true;
   uploadBox.classList.add('loaded');
   statusEl.textContent = "Audio cargado. Completa los links y prueba la vista previa.";
+  analyzeBtn.disabled = false;
   checkEnable();
 });
+
+function populateVoices(){
+  const all = speechSynthesis.getVoices();
+  const es = all.filter(v=>v.lang.toLowerCase().startsWith('es'));
+  const list = es.length ? es : all;
+  voiceSelect.innerHTML = '';
+  list.forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    voiceSelect.appendChild(opt);
+  });
+}
+if('speechSynthesis' in window){
+  populateVoices();
+  speechSynthesis.onvoiceschanged = populateVoices;
+} else {
+  ttsBox.innerHTML = '<div class="lbl">Tu navegador no soporta voz sintetizada (Web Speech API). Usa el audio subido.</div>';
+}
+speedSlider.addEventListener('input', ()=>{ speedLabel.textContent = parseFloat(speedSlider.value).toFixed(1)+'x'; });
 
 function checkEnable(){
   const anyId = segments.some((_,i)=>{
     const box = document.getElementById('id-'+i);
     return box.dataset.videoId && box.dataset.videoId.length===11;
   });
-  const enabled = ytReady && audioLoaded && anyId;
+  const mode = getMode();
+  const narrReady = mode==='audio'
+    ? audioLoaded
+    : segments.some((_,i)=> (document.getElementById('script-'+i).value||'').trim().length>0);
+  const enabled = ytReady && narrReady && anyId;
   playBtn.disabled = !enabled;
   recordBtn.disabled = !enabled;
 }
@@ -267,28 +368,65 @@ function loadSegment(i){
 }
 
 audioEl.addEventListener('timeupdate', ()=>{
-  if(!playing) return;
+  if(!playing || getMode()!=='audio') return;
   const t = audioEl.currentTime;
   for(let i=0;i<segments.length;i++){
     if(t>=cum[i] && t<cum[i+1] && currentSeg!==i){ loadSegment(i); break; }
   }
 });
 
-audioEl.addEventListener('ended', ()=>{
+function finishSequence(){
   stopSequence();
-  if(recorder && recorder.state==='recording'){
-    recorder.stop();
-  }
+  if(recorder && recorder.state==='recording') recorder.stop();
   statusEl.textContent = "Secuencia terminada.";
   statusEl.className = "status ok";
-});
+}
+audioEl.addEventListener('ended', finishSequence);
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+function speakText(text){
+  return new Promise(resolve=>{
+    const u = new SpeechSynthesisUtterance(text);
+    const voices = speechSynthesis.getVoices();
+    const chosen = voices.find(v=>v.name===voiceSelect.value);
+    if(chosen){ u.voice = chosen; u.lang = chosen.lang; } else { u.lang = 'es-ES'; }
+    u.rate = parseFloat(speedSlider.value) || 1;
+    u.onend = ()=>resolve();
+    u.onerror = ()=>resolve();
+    speechSynthesis.speak(u);
+  });
+}
+
+async function playWithTTS(){
+  for(let i=0;i<segments.length;i++){
+    if(!playing) break;
+    loadSegment(i);
+    const text = (document.getElementById('script-'+i).value||'').trim();
+    if(text){
+      const t0 = performance.now();
+      await speakText(text);
+      if(!playing) break;
+      const real = (performance.now()-t0)/1000;
+      document.getElementById('dur-'+i).value = real.toFixed(1);
+      recalcCum();
+    } else {
+      await sleep(800);
+    }
+  }
+  if(playing) finishSequence();
+}
 
 function startSequence(){
   playing = true;
   currentSeg = -1;
-  audioEl.currentTime = 0;
-  audioEl.play();
-  loadSegment(0);
+  if(getMode()==='audio'){
+    audioEl.currentTime = 0;
+    audioEl.play();
+    loadSegment(0);
+  } else {
+    playWithTTS();
+  }
 }
 
 playBtn.addEventListener('click', ()=>{
@@ -303,16 +441,28 @@ stopBtn.addEventListener('click', stopSequence);
 function stopSequence(){
   playing = false;
   audioEl.pause();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
   if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
   playBtn.disabled = false;
   stopBtn.disabled = true;
 }
 
 recordBtn.addEventListener('click', async ()=>{
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
+    statusEl.textContent = "Este navegador o dispositivo no permite grabar la pantalla desde la web. Usa el grabador de pantalla nativo de tu Android (panel de ajustes rápidos) mientras le das 'Reproducir vista previa'.";
+    statusEl.className = "status";
+    return;
+  }
   try{
     mediaStream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
   } catch(err){
-    statusEl.textContent = "No se pudo iniciar la grabación (permiso cancelado).";
+    if(err.name === 'NotAllowedError'){
+      statusEl.textContent = "Se canceló el permiso de grabación. Vuelve a intentar y, cuando el navegador pregunte qué compartir, elige 'Esta pestaña', activa 'Compartir audio de la pestaña' y presiona Compartir (no Cancelar).";
+    } else if(err.name === 'NotSupportedError' || err.name === 'NotFoundError'){
+      statusEl.textContent = "Tu dispositivo no soporta grabar la pantalla desde el navegador. Usa el grabador de pantalla nativo de tu Android en su lugar, mientras reproduces la vista previa.";
+    } else {
+      statusEl.textContent = "No se pudo iniciar la grabación (" + err.name + "): " + err.message;
+    }
     statusEl.className = "status";
     return;
   }
@@ -322,7 +472,14 @@ recordBtn.addEventListener('click', async ()=>{
     if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
   }
   const chunks = [];
-  recorder = new MediaRecorder(mediaStream, {mimeType});
+  try{
+    recorder = new MediaRecorder(mediaStream, {mimeType});
+  } catch(err){
+    statusEl.textContent = "No se pudo preparar la grabación en este dispositivo: " + err.message;
+    statusEl.className = "status";
+    mediaStream.getTracks().forEach(t=>t.stop());
+    return;
+  }
   recorder.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data); };
   recorder.onstop = ()=>{
     const blob = new Blob(chunks, {type: mimeType});
@@ -346,6 +503,92 @@ recordBtn.addEventListener('click', async ()=>{
   playBtn.disabled = true;
   stopBtn.disabled = false;
   recordBtn.disabled = true;
+});
+
+// --- Análisis de audio (detección de silencios) ---
+async function analyzeAudioFile(file){
+  const buf = await file.arrayBuffer();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AC();
+  const audioBuffer = await ctx.decodeAudioData(buf);
+  const data = audioBuffer.getChannelData(0);
+  const sr = audioBuffer.sampleRate;
+  const winSize = Math.max(1, Math.floor(sr*0.05));
+  const rms = [];
+  for(let i=0;i<data.length;i+=winSize){
+    let sum=0; const end=Math.min(i+winSize,data.length);
+    for(let j=i;j<end;j++) sum += data[j]*data[j];
+    rms.push(Math.sqrt(sum/(end-i)));
+  }
+  const maxRms = Math.max(...rms) || 1;
+  const threshold = maxRms*0.08;
+  const minSilenceWindows = 8; // ~400ms de silencio para contar como pausa
+  const boundaries = [];
+  let silentCount = 0;
+  for(let w=0; w<rms.length; w++){
+    if(rms[w] < threshold){
+      silentCount++;
+    } else {
+      if(silentCount >= minSilenceWindows){
+        const centerWindow = w - Math.floor(silentCount/2);
+        boundaries.push({time: centerWindow*0.05, strength: silentCount});
+      }
+      silentCount = 0;
+    }
+  }
+  const duration = audioBuffer.duration;
+  ctx.close();
+  return {duration, boundaries};
+}
+
+analyzeBtn.addEventListener('click', async ()=>{
+  if(!currentAudioFile) return;
+  analyzeBtn.disabled = true;
+  analyzeStatus.textContent = "Analizando audio... esto puede tardar unos segundos.";
+  analyzeResult.style.display = 'none';
+  applyDurationsBtn.style.display = 'none';
+  try{
+    const {duration, boundaries} = await analyzeAudioFile(currentAudioFile);
+    const need = segments.length - 1;
+    const picks = boundaries.slice()
+      .sort((a,b)=> b.strength - a.strength)
+      .slice(0, need)
+      .map(b=>b.time)
+      .sort((a,b)=> a-b);
+
+    const bounds = [0, ...picks, duration];
+    detectedDurations = [];
+    for(let i=0;i<bounds.length-1;i++) detectedDurations.push(+(bounds[i+1]-bounds[i]).toFixed(1));
+
+    if(picks.length < need){
+      analyzeStatus.textContent = `Duración total del audio: ${duration.toFixed(1)}s. Se detectaron pausas claras para ${picks.length} de ${need} cortes necesarios — usa esto como referencia y ajusta a mano los bloques restantes.`;
+    } else {
+      analyzeStatus.textContent = `Duración total del audio: ${duration.toFixed(1)}s. Se detectaron pausas para los ${segments.length} bloques.`;
+    }
+
+    let html='';
+    segments.forEach((s,i)=>{
+      const d = detectedDurations[i] !== undefined ? detectedDurations[i]+'s' : '—';
+      html += `<div>Bloque ${i+1}: ${s.label} → ${d}</div>`;
+    });
+    analyzeResult.innerHTML = html;
+    analyzeResult.style.display = 'block';
+    applyDurationsBtn.style.display = 'inline-flex';
+  } catch(err){
+    analyzeStatus.textContent = "No se pudo analizar el audio: " + err.message;
+  }
+  analyzeBtn.disabled = false;
+});
+
+applyDurationsBtn.addEventListener('click', ()=>{
+  if(!detectedDurations) return;
+  segments.forEach((_,i)=>{
+    if(detectedDurations[i] !== undefined){
+      document.getElementById('dur-'+i).value = detectedDurations[i];
+    }
+  });
+  recalcCum();
+  analyzeStatus.textContent += " Duraciones aplicadas a los bloques.";
 });
 </script>
 </body>
